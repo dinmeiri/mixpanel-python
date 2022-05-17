@@ -621,7 +621,6 @@ class Consumer(object):
             )
         except Exception as e:
             logging.error(e)
-            print("got here without a problem")
             six.raise_from(MixpanelException(e), e)
 
         try:

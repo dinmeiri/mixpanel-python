@@ -186,7 +186,7 @@ class Mixpanel(object):
             event.update(meta)
 
         sync_consumer = Consumer()
-        sync_consumer.send('events', json_dumps(event, cls=self._serializer))
+        return sync_consumer.send('events', json_dumps(event, cls=self._serializer))
 
     def merge(self, api_key, distinct_id1, distinct_id2, meta=None, api_secret=None):
         """
@@ -591,7 +591,7 @@ class Consumer(object):
         if endpoint not in self._endpoints:
             raise MixpanelException('No such endpoint "{0}". Valid endpoints are one of {1}'.format(endpoint, self._endpoints.keys()))
 
-        self._write_request(self._endpoints[endpoint], json_message, api_key, api_secret)
+        return self._write_request(self._endpoints[endpoint], json_message, api_key, api_secret)
 
     def _write_request(self, request_url, json_message, api_key=None, api_secret=None):
         if isinstance(api_key, tuple):
@@ -620,6 +620,7 @@ class Consumer(object):
                 verify=self._verify_cert,
             )
         except Exception as e:
+            logging.error(e)
             six.raise_from(MixpanelException(e), e)
 
         try:
@@ -630,7 +631,7 @@ class Consumer(object):
         if response_dict['status'] != 1:
             raise MixpanelException('Mixpanel error: {0}'.format(response_dict['error']))
 
-        return True  # <- TODO: remove return val with major release.
+        return response.status_code  # <- TODO: remove return val with major release.
 
 
 class BufferedConsumer(object):
